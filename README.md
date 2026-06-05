@@ -1,6 +1,7 @@
 # VPN Monitor
 
-轻量级 VPN 域名级流量监控面板。第一版面向个人自建节点，支持读取 Xray access log，并把标准化后的访问记录保存到 SQLite。
+轻量级 VPN 域名级流量监控面板。第一版面向个人自建节点，支持读取
+Xray access log，并把标准化后的访问记录保存到 SQLite。
 
 > 隐私边界：本项目不解密 HTTPS，不做 TLS 中间人，不读取网页正文、账号密码或表单内容。它只记录代理服务端日志里已经可见的元数据，例如时间、来源 IP、目标域名/IP、入站节点、用户/设备、协议和分类。
 
@@ -24,6 +25,53 @@
 - 支持 CSV / JSON 导出，方便后续分析。
 - 适配器式结构，后续可以扩展 Marzban API、Sing-box、Mihomo 等数据源。
 
+## 一键安装
+
+在已经安装 VPN 面板的 VPS 上，以 root 身份执行：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/xiaogoulingdi/VPNMonitor/main/scripts/install.sh | bash
+```
+
+如果当前用户不是 root，可以使用：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/xiaogoulingdi/VPNMonitor/main/scripts/install.sh | sudo bash
+```
+
+安装脚本会自动完成：
+
+- 安装 Python、venv、curl、openssl 等基础依赖。
+- 下载项目到 `/opt/vpn-monitor`。
+- 创建独立 Python 虚拟环境。
+- 生成随机登录密码和会话密钥。
+- 写入 `/etc/vpn-monitor.env`。
+- 创建并启动 `vpn-monitor.service`。
+
+登录信息会保存到：
+
+```text
+/root/vpn-monitor-login.txt
+```
+
+默认只监听本机地址 `127.0.0.1:9100`，建议通过 Nginx 反代到 `/monitor/`，再给域名配置 HTTPS。Nginx 示例见：
+
+```text
+/opt/vpn-monitor/examples/nginx-monitor.example.conf
+```
+
+如果只是测试，想直接开放面板端口，可以执行：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/xiaogoulingdi/VPNMonitor/main/scripts/install.sh | env VPN_MONITOR_PUBLIC=1 bash
+```
+
+如果你的 Xray access log 路径不是默认值，可以这样指定：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/xiaogoulingdi/VPNMonitor/main/scripts/install.sh | env XRAY_ACCESS_LOG=/path/to/access.log bash
+```
+
 ## 目录结构
 
 ```text
@@ -36,7 +84,7 @@ vpn_monitor/
   db.py              # SQLite schema 和写入逻辑。
   models.py          # 标准化事件模型。
 examples/            # env、systemd、Nginx 示例。
-scripts/             # 本地开发脚本。
+scripts/             # 一键安装和本地开发脚本。
 tests/               # 单元测试。
 ```
 
@@ -46,7 +94,7 @@ tests/               # 单元测试。
 vpn_monitor.web.app:app
 ```
 
-## 安装
+## 手动开发安装
 
 ```bash
 python3 -m venv .venv

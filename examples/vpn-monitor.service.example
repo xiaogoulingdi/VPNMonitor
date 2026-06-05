@@ -1,0 +1,15 @@
+[Unit]
+Description=VPN Monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/windows_control/monitor-panel
+EnvironmentFile=/etc/vpn-monitor.env
+ExecStart=/home/windows_control/monitor-panel/.venv/bin/uvicorn vpn_monitor.web.app:app --host 127.0.0.1 --port 9100
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

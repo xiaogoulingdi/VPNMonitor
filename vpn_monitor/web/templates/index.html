@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VPN Monitor</title>
+  <link rel="stylesheet" href="static/app.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>VPN Monitor</h1>
+      <div class="subtle">域名级访问记录，不解密 HTTPS 内容</div>
+    </div>
+    <div class="actions">
+      <span class="status"><span class="dot"></span>Live</span>
+      <span class="version-pill">FastAPI v0.1</span>
+      <a id="csvLink" href="api/export.csv">CSV</a>
+      <a id="jsonLink" href="api/export.json">JSON</a>
+      <a href="logout">退出</a>
+    </div>
+  </header>
+  <main>
+    <section class="toolbar">
+      <div><label>开始时间</label><input id="from" type="datetime-local"></div>
+      <div><label>结束时间</label><input id="to" type="datetime-local"></div>
+      <div><label>用户 / 设备</label><select id="email"><option value="">全部</option></select></div>
+      <div><label>入站</label><select id="inbound"><option value="">全部</option></select></div>
+      <div><label>来源 IP</label><select id="source_ip"><option value="">全部</option></select></div>
+      <div><label>域名包含</label><input id="domain" placeholder="youtube.com"></div>
+      <div><label>分类</label><select id="category"><option value="">全部</option><option value="overseas">overseas</option><option value="domestic">domestic</option><option value="ip">ip</option><option value="other">other</option><option value="internal">internal</option></select></div>
+      <div><button id="apply">筛选</button></div>
+      <div><button class="secondary" id="reset">重置</button></div>
+    </section>
+    <section class="cards">
+      <div class="card"><div class="subtle">连接记录</div><div class="value" id="events">0</div></div>
+      <div class="card"><div class="subtle">目标域名/IP</div><div class="value" id="targets">0</div></div>
+      <div class="card"><div class="subtle">用户 / 设备</div><div class="value" id="users">0</div></div>
+      <div class="card"><div class="subtle">来源 IP</div><div class="value" id="sources">0</div></div>
+      <div class="card"><div class="subtle">最后访问</div><div class="value small" id="lastSeen">-</div></div>
+    </section>
+    <section class="panel active-panel">
+      <h2>当前活跃访问 <span class="subtle">最近 {{ active_window_minutes }} 分钟，按最后访问排序</span></h2>
+      <div class="active-list" id="activeList"></div>
+    </section>
+    <section class="grid">
+      <div class="panel"><h2>Top 域名 <span class="subtle">按连接数</span></h2><div class="bars" id="topDomains"></div></div>
+      <div class="panel"><h2>小时趋势 <span class="subtle">当前筛选范围</span></h2><div class="chart" id="hourly"></div></div>
+    </section>
+    <section class="grid">
+      <div class="panel"><h2>用户统计</h2><div class="bars" id="topUsers"></div></div>
+      <div class="panel"><h2>入站 / 分类</h2><div class="bars" id="inbounds"></div><div class="spacer"></div><div class="bars" id="categories"></div></div>
+    </section>
+    <section class="panel">
+      <h2>最近访问 <span class="subtle" id="logMeta"></span></h2>
+      <div class="table-wrap"><table><thead><tr><th>时间</th><th>用户</th><th>来源 IP</th><th>目标</th><th>端口</th><th>入站</th><th>分类</th><th>协议</th></tr></thead><tbody id="eventsBody"></tbody></table></div>
+    </section>
+  </main>
+  <script src="static/app.js"></script>
+</body>
+</html>

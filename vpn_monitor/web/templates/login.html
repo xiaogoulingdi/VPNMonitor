@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VPN Monitor 登录</title>
+  <link rel="stylesheet" href="static/app.css">
+</head>
+<body class="login-body">
+  <main class="login-shell">
+    <div class="brand">
+      <h1>VPN Monitor</h1>
+      <p>域名级访问记录与节点观察面板</p>
+    </div>
+    <section class="login-panel">
+      {% if error %}
+      <div class="error show">用户名或密码不正确。</div>
+      {% endif %}
+      <form method="post" action="login">
+        <div class="field">
+          <label for="username">用户名</label>
+          <input id="username" name="username" autocomplete="username" required autofocus>
+        </div>
+        <div class="field">
+          <label for="password">密码</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit">登录</button>
+      </form>
+    </section>
+    <div class="login-foot">建议后续给 /monitor/ 配置 HTTPS，避免 HTTP 下凭据明文传输。</div>
+  </main>
+</body>
+</html>

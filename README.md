@@ -25,6 +25,28 @@ Xray access log，并把标准化后的访问记录保存到 SQLite。
 - 支持 CSV / JSON 导出，方便后续分析。
 - 适配器式结构，后续可以扩展 Marzban API、Sing-box、Mihomo 等数据源。
 
+## 面板兼容性
+
+当前版本不是通过机场面板 API 获取数据，而是读取代理核心生成的
+Xray access log。因此它的兼容性主要取决于：你的面板是否使用 Xray-core，
+以及是否能开启并暴露 access log 文件。
+
+已实测：
+
+- Marzban：可用。默认读取 `/var/lib/marzban/xray_access.log`。
+
+通常可以接入，但需要自行确认日志路径和日志格式：
+
+- 3x-ui / x-ui：如果启用了 Xray access log，可以通过 `XRAY_ACCESS_LOG` 指定日志路径。
+- 其他基于 Xray-core 的面板：只要能生成兼容的 access log，也可以接入。
+
+当前没有内置深度 API 适配：
+
+- Marzneshin、Hiddify、V2Board、SSPanel、Mihomo、Sing-box 等。
+
+这些面板不是不能做，而是需要后续新增对应的数据源适配器。第一版先把
+Xray access log 路径打通，避免直接依赖某一个面板的私有接口。
+
 ## 一键安装
 
 在已经安装 VPN 面板的 VPS 上，以 root 身份执行：

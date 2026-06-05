@@ -35,6 +35,7 @@ need_cmd() {
 
 install_packages() {
   if need_cmd apt-get; then
+    export DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt-get install -y ca-certificates curl tar openssl python3 python3-venv
     if ! python3 -m venv "$tmpdir/venv-check" >/dev/null 2>&1; then

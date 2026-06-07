@@ -2,6 +2,7 @@ import time
 
 from vpn_monitor.config import settings
 from vpn_monitor.db import connect_db
+from vpn_monitor.services.marzban import query_marzban_users
 
 
 def now_ts() -> int:
@@ -71,7 +72,11 @@ def query_summary(params) -> dict:
         inbounds = [dict(row) for row in conn.execute(f"SELECT COALESCE(NULLIF(inbound, ''), 'unknown') AS inbound, COUNT(*) AS count FROM events {where} GROUP BY inbound ORDER BY count DESC LIMIT 12", args)]
         categories = [dict(row) for row in conn.execute(f"SELECT category, COUNT(*) AS count FROM events {where} GROUP BY category ORDER BY count DESC", args)]
         hourly = [dict(row) for row in conn.execute(f"SELECT CAST(ts / 3600 AS INTEGER) * 3600 AS bucket, COUNT(*) AS count FROM events {where} GROUP BY bucket ORDER BY bucket ASC LIMIT 240", args)]
-    return {"totals": dict(totals), "top_domains": top_domains, "top_users": top_users, "inbounds": inbounds, "categories": categories, "hourly": hourly, "retention_days": settings.retention_days, "access_log": str(settings.access_log)}
+    totals = dict(totals)
+    top_users = merge_marzban_user_counts(top_users, first(params, "email"))
+    if top_users:
+        totals["users"] = len([row for row in top_users if row["user"] != "unknown"])
+    return {"totals": totals, "top_domains": top_domains, "top_users": top_users, "inbounds": inbounds, "categories": categories, "hourly": hourly, "retention_days": settings.retention_days, "access_log": str(settings.access_log)}
 
 
 def query_events(params) -> list[dict]:
@@ -98,6 +103,7 @@ def query_options() -> dict:
         emails = [row[0] for row in conn.execute("SELECT DISTINCT email FROM events WHERE email != '' ORDER BY email")]
         inbounds = [row[0] for row in conn.execute("SELECT DISTINCT inbound FROM events WHERE inbound != '' ORDER BY inbound")]
         sources = [row[0] for row in conn.execute("SELECT DISTINCT source_ip FROM events WHERE source_ip != '' ORDER BY source_ip")]
+    emails = sorted(set(emails) | {user["email"] for user in query_marzban_users()})
     return {"emails": emails, "inbounds": inbounds, "sources": sources, "categories": ["overseas", "domestic", "ip", "other", "internal"]}
 
 
@@ -106,3 +112,17 @@ def export_rows(params) -> list[dict]:
     scoped["limit"] = ["100000"]
     scoped["offset"] = ["0"]
     return query_events(scoped)
+
+
+def merge_marzban_user_counts(rows: list[dict], selected_email: str = "") -> list[dict]:
+    counts = {row["user"]: row["count"] for row in rows}
+    marzban_emails = [user["email"] for user in query_marzban_users()]
+    if selected_email:
+        if selected_email in marzban_emails:
+            counts.setdefault(selected_email, 0)
+    else:
+        for email in marzban_emails:
+            counts.setdefault(email, 0)
+    merged = [{"user": user, "count": count} for user, count in counts.items()]
+    merged.sort(key=lambda row: (-row["count"], row["user"]))
+    return merged[:12]

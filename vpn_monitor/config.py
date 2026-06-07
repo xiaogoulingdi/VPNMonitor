@@ -17,6 +17,7 @@ def env_bool(name: str, default: bool) -> bool:
 class Settings:
     db_path: Path = Path(os.environ.get("MONITOR_DB", BASE_DIR / "monitor.db"))
     access_log: Path = Path(os.environ.get("XRAY_ACCESS_LOG", "/var/lib/marzban/xray_access.log"))
+    marzban_db_path: Path = Path(os.environ.get("MARZBAN_DB", "/var/lib/marzban/db.sqlite3"))
     host: str = os.environ.get("MONITOR_HOST", "127.0.0.1")
     port: int = int(os.environ.get("MONITOR_PORT", "9100"))
     retention_days: int = int(os.environ.get("MONITOR_RETENTION_DAYS", "30"))
